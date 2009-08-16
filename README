@@ -1,17 +1,28 @@
-A sinatra app analyzing and visualizing gpx/kml/nmea gps traces
+= run-a-lot
 
-ruby gems needed:
-	* sinatra
-* nokogiri (for gpx parsing)
-	* do_mysql
-	* dm-core
-	* dm-aggregates
-	* gchartrb
+A sinatra app analyzing and visualizing gpx/kml/nmea gps traces.
+
+
+== Ruby gems needed
+
+  * sinatra
+  * nokogiri (for gpx parsing)
+  * do_sqlite3 || do_postgres || do_mysql
+  * dm-core
+  * dm-aggregates
+  * gchartrb
+
+
+== Setup
 
 MySQL:
-	just set up an empty Database and set the connectionsring in config/config.yml
+  Just set up an empty Database and set the connections in config/config.yml
+
+PostgreSQL:
+  Just set up an empty Database and set the connections in config/config.yml
+
+SQLite3:
+  Just run it.
 
 Google Maps:
-	you need an individual API key. The one given in config.yml is for localhost, if you want to use run-a-log somewehre else, get an appropiate key.
-
-
+  You need an individual API key. The one given in config.yml is for localhost, if you want to use run-a-log somewehre else, get an appropiate key.

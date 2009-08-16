@@ -12,32 +12,42 @@ configure do
   require "yaml"
   require "dm-core" #sudo gem install dm-core
   require "dm-aggregates" #sudo gem install dm-aggregates
-  #sudo gem install do_mysql
-  require 'google_chart'  #sudo gem install gchartb
+  #sudo gem install do_sqlite3
+  require 'google_chart'  #sudo gem install gchartrb
   require "Persistence"
   require "Parser"
-
 
 
   puts "*****************SETTING_UP_CONFIGURATION**********************"
 
   #'''''''''READING CONFIG FILE''''''''
   puts "reading config file config/config.yml"
-  
+
   config = YAML.load_file("config/config.yml")
 
   #adding the stuff from inside the config to sinatras options hash
   #accessing e.g. the :data_folder option via Sinatra::Application.data_folder
-	set :google_maps_key => config["google_maps_key"],
+  set :google_maps_key => config["google_maps_key"],
     :data_folder => config["data_folder"],
     :allowed_extensions => config["allowed_extensions"],
     :admin_pass => config["admin_pass"],
-    :db_connect_string => config["db_connect_string"]
+    :db_connect_string => config["db_connect"]["string"]
 
   #'''''''''DATABASE CONNECTION''''''''
-  
 
-  DataMapper.setup(:default, Sinatra::Application.db_connect_string)
+
+  DataMapper.setup(:default, case config["db_connect"]["adapter"]
+    when "sqlite3"
+      require "do_sqlite3"
+      { :adapter => "sqlite3", :database => config["db_connect"]["string"]}
+    when "pg", "postgres" then
+      require "do_postgres"
+      { :adapter => "sqlite3", :database => config["db_connect"]["string"]}
+    when "mysql"
+      require "do_mysql"
+      Sinatra::Application.db_connect_string
+  end)
+
   begin
     puts "Found #{Persistence.all.size} entries"
   rescue Exception
@@ -58,13 +68,13 @@ get '/' do
     end
   end
 
-  
+
   p = Parser.new
 
 
   #we now check if all of the files are in the database already (matching the filename)
   #if they're NOT in the database, we parse and add them
-  
+
   my_files.each do |this_file|
     if (Persistence.all(:filename => this_file.to_s).size > 0)
       #puts "File #{this_file.to_s} is already in Database :)"
@@ -78,7 +88,7 @@ get '/' do
   #we want the newest tracks to be on top
   @my_tracks = Persistence.all(:order => [:start.desc])
 
-  
+
   @total_distance = Integer(Persistence.sum(:distance) / 1000)
   @average_distance = Integer(Persistence.avg(:distance))
   @total_duration = Integer(Persistence.sum(:duration) / 3600)
@@ -97,13 +107,13 @@ get '/details/*' do
   #as this is supposed to be a filename, we check our database of the first record with this filename
   @my_item = Persistence.first(:filename => filename.to_s)
   unless @my_item.nil?
-    
-    
+
+
     p = Parser.new
-    
+
     #we should be able to get this faster, maybe add this stuff to the Persistence class
     @container = p.parse(Sinatra::Application.data_folder + filename.to_s)
-    
+
 
     @polyline = @container.get_embedded_map_polyline
     #we also need tha latitude/longtitude array for the borders in google maps
@@ -112,8 +122,8 @@ get '/details/*' do
     #and now to the graphs
 
 
-    
-    
+
+
     #************SPEED GRAPH PREPARATIONS***************
     original_speed_array = @container.get_speed_array
     my_steps = original_speed_array.size / 300

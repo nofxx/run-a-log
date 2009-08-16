@@ -2,4 +2,18 @@ google_maps_key: 'ABQICCCFECFEAE82qgb3Zc2YyS-oBT2yXp_ZAY8_ufC3CFXhHIE1NvwkxSySz_
 data_folder: 'sample_data/'
 allowed_extensions: ['.gpx', '.nmea', '.kml']
 admin_pass: 'wtfbbq'
-db_connect_string: 'mysql://user:pass@mysql.example.com/runalog'
+
+# SQLite3
+db_connect:
+  adapter: 'sqlite3'
+  string: 'dev.sqlite3'
+
+# PostgreSQL
+# db_connect:
+#   adapter: pg
+#   string: 'runalot_dev'
+
+# MySQL
+# db_connect:
+#   adapter: mysql
+#   string: 'mysql://user:pass@mysql.example.com/runalog'
